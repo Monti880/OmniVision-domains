@@ -1,0 +1,46 @@
+name: Update Domains
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: domains-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        run: pip install curl_cffi
+      - name: Verify and update domains
+        run: python update_domains.py
+      - name: Commit changes
+        run: |
+          if ! git diff --quiet -- domains.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add domains.json
+            git commit -m "Aggiornamento automatico domini"
+            git push
+          fi
+      - name: Open issue for unreachable services
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -s broken_domains.txt ]; then
+            title="Domini non raggiungibili: $(paste -sd ', ' broken_domains.txt)"
+            if ! gh issue list --state open --search "in:title Domini non raggiungibili" --json number -q '.[0].number' | grep -q .; then
+              gh issue create --title "$title" --body "Il controllo automatico non ha trovato un dominio valido per: $(paste -sd ', ' broken_domains.txt). Correggi a mano domains.json con il nuovo indirizzo."
+            fi
+          fi
