@@ -1,8 +1,8 @@
 name: Update Domains
 
+# Manual only: GitHub's servers are outside Italy, so they see domains that Italian providers block
+# (and miss sites that refuse datacenter connections). Running it would put the wrong domains in the list.
 on:
-  schedule:
-    - cron: "17 */3 * * *"
   workflow_dispatch:
 
 permissions:

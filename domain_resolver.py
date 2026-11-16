@@ -55,7 +55,8 @@ FINGERPRINTS: dict[str, tuple[str, ...]] = {
     "streamingcommunity": (r'id="app"', r"data-page="),
     "animeunity": (r"animeunity", r"csrf-token|livesearch|archivio"),
     "animeworld": (r"animeworld",),
-    "cb01new": (r"cb01",),
+    # The real site is WordPress; copycat landers titled "cb01" (e.g. madara.fans) are not.
+    "cb01new": (r"cb01", r"wp-content", r"/category/"),
 }
 
 MIN_HEAL_INTERVAL_SECONDS = 60
